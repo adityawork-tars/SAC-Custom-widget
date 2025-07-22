@@ -8,7 +8,7 @@
     "webcomponents": [
       {
         "kind": "main",
-        "url": "https://cdn.jsdelivr.net/gh/adityawork-tars/SAC-Custom-widget/"
+        "url": "https://cdn.jsdelivr.net/gh/adityawork-tars/SAC-Custom-widget@main/treeview-widget.js"
       }
     ]
   },

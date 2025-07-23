@@ -1,51 +1,61 @@
-class TreeViewWidget extends HTMLElement {
-    constructor() {
-        super();
-        this.attachShadow({ mode: "open" });
+class HierarchyTreeWidget extends HTMLElement {
+  constructor() {
+    super();
+    this.root = this.attachShadow({ mode: 'open' });
+  }
 
-        const style = document.createElement("style");
-        style.textContent = \`
-            ul { list-style: none; padding-left: 1rem; }
-            li { cursor: pointer; }
-            .non-leaf { color: gray; cursor: default; }
-        \`;
-        this.shadowRoot.appendChild(style);
-
-        this.treeContainer = document.createElement("div");
-        this.shadowRoot.appendChild(this.treeContainer);
+  async onCustomWidgetAfterUpdate(changedProperties) {
+    this.root.innerHTML = ""; // Clear previous
+    const dim = this.properties.dimension;
+    if (!dim) {
+      this.root.textContent = "Please configure Dimension name.";
+      return;
     }
+    const members = await this.getMembers(dim); // SAC provided API
+    const tree = this.buildTree(members);
+    this.root.appendChild(tree);
+  }
 
-    loadTree(treeData) {
-        this.treeContainer.innerHTML = "";
-        this.renderTree(treeData, this.treeContainer);
+  buildTree(members) {
+    const byParent = {};
+    members.forEach(m => {
+      const pid = m.parentId || "_ROOT_";
+      byParent[pid] = byParent[pid] || [];
+      byParent[pid].push(m);
+    });
+
+    const ul = document.createElement('ul');
+    (byParent["_ROOT_"] || []).forEach(m => {
+      ul.appendChild(this.buildNode(m, byParent));
+    });
+    return ul;
+  }
+
+  buildNode(member, byParent) {
+    const li = document.createElement('li');
+    li.textContent = member.text;
+    const children = byParent[member.id];
+    if (children && children.length) {
+      const childUl = document.createElement('ul');
+      children.forEach(c => childUl.appendChild(this.buildNode(c, byParent)));
+      li.appendChild(childUl);
+    } else {
+      // Leaf node — allow click
+      li.style.cursor = 'pointer';
+      li.onclick = () => this.fireSelect(member);
     }
+    return li;
+  }
 
-    renderTree(nodes, container) {
-        const ul = document.createElement("ul");
-        for (const node of nodes) {
-            const li = document.createElement("li");
+  fireSelect(member) {
+    const evt = new CustomEvent('nodeSelect', { detail: member });
+    this.dispatchEvent(evt);
+  }
 
-            if (node.children && node.children.length > 0) {
-                li.textContent = node.description;
-                li.classList.add("non-leaf");
-                this.renderTree(node.children, li);
-            } else {
-                li.textContent = node.description;
-                li.onclick = () => {
-                    const event = new CustomEvent("onCustomWidgetEvent", {
-                        detail: {
-                            type: "leafSelected",
-                            payload: node.id
-                        }
-                    });
-                    this.dispatchEvent(event);
-                };
-            }
-
-            ul.appendChild(li);
-        }
-        container.appendChild(ul);
-    }
+  async getMembers(dimension) {
+    // SAC's custom widget API: fetch flattened members with parents
+    return this.getDataSource().getDimensionMembers(dimension, { includeParents: true });
+  }
 }
 
-customElements.define("tree-view-widget", TreeViewWidget);
+customElements.define('hierarchy-tree-widget', HierarchyTreeWidget);

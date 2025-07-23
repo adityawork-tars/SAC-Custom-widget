@@ -1,40 +1,13 @@
 {
-  "Contribution": {
-    "id": "tree.view.widget",
-    "name": "TreeViewWidget",
-    "description": "Displays a dimension hierarchy and allows selection of only leaf nodes.",
-    "newInstancePrefix": "TreeViewWidget",
-    "icon": "sap-icon://tree",
-    "webcomponents": [
-      {
-        "kind": "main",
-        "url": "https://cdn.jsdelivr.net/gh/adityawork-tars/SAC-Custom-widget@main/treeview-widget.js"
-      }
-    ]
-  },
-  "properties": [],
-  "methods": [
-    {
-      "name": "loadTree",
-      "description": "Load the dimension hierarchy tree",
-      "parameters": [
-        {
-          "name": "treeData",
-          "type": "object"
-        }
-      ]
+  "name": "HierarchyTreeWidget",
+  "description": "Shows a dimension hierarchy and allows selecting only leaf nodes",
+  "version": "1.0.0",
+  "main": "HierarchyTreeWidget.js",
+  "properties": {
+    "dimension": {
+      "type": "string",
+      "label": "Dimension Name",
+      "defaultValue": ""
     }
-  ],
-  "events": [
-    {
-      "name": "leafSelected",
-      "description": "Fires when a leaf node is selected",
-      "parameters": [
-        {
-          "name": "payload",
-          "type": "string"
-        }
-      ]
-    }
-  ]
+  }
 }
